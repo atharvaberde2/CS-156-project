@@ -42,6 +42,24 @@ def what_is_your_move(board, game_rows, game_cols, my_game_symbol):
 
    return random.randint(1, game_cols)
 
+def a_star(board,rows,columns, my_char, opp_char):
+    class Connect4State:
+        def __init__(self, board, moves, cost):
+            self.board = board
+            self.moves = moves
+            self.cost= cost 
+            self.heuristic = heuristic(board, my_char, opp_char)    
+
+        def valid_cells(board, row):
+            return [col for col in range(len(board[0])) if board[0][col] == ' ']
+        
+        def apply_move(board, row, col, symbol):
+            for r in reversed(range(rows)):
+                if board[r][col] == ' ':
+                    board[r][col] = symbol
+                    return board
+            return None
+
 def window_evaluation(window, my_char, opp_char):
     score = 0
     my_count = window.count(my_char)
