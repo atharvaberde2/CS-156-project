@@ -42,6 +42,44 @@ def what_is_your_move(board, game_rows, game_cols, my_game_symbol):
 
    return random.randint(1, game_cols)
 
+def window_evaluation(window, my_char, opp_char):
+    score = 0
+    my_count = window.count(my_char)
+    opp_count = window.count(opp_char)
+    empty_count = window.count(' ')
+
+    #Win
+    if my_count == 4:
+        score = 10000
+    elif my_count == 3 and empty_count == 1:  #One more to win
+        score = 100
+    elif my_count ==2 and empty_count ==2:
+        score = 10
+    elif opp_count ==3 and empty_count == 1:
+        score = -10000
+    elif opp_count ==2 and empty_count == 2:
+        score = -50
+    return score
+
+def heuristic(board, my_char, opp_char):
+    score = 0
+    for i in range(len(board)):
+        for j in range(len(board[0]) - 3):
+            window = [board[i][j+k] for k in range(4)]
+            score += window_evaluation(window, my_char, opp_char)   # horizontal
+    for j in range(len(board[0])):
+        for i in range(len(board) - 3):
+            window = [board[i+k][j] for k in range(4)]
+            score += window_evaluation(window, my_char, opp_char) #vertical
+    for i in range(3, len(board)):
+        for j in range(len(board[0]) - 3):
+            window = [board[i-k][j+k] for k in range(4)]
+            score += window_evaluation(window, my_char, opp_char) #forward diagnol
+    for i in range(len(board) - 3):
+        for j in range(len(board[0]) - 3):
+            window = [board[i+k][j+k] for k in range(4)]
+            score += window_evaluation(window, my_char, opp_char) #backward diagnol
+    return score
 def connect_4_result(board, winner, looser):
     """The Connect 4 manager calls this function when the game is over.
     If there is a winner, the team name of the winner and looser are the
