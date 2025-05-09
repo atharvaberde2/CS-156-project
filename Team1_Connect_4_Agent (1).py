@@ -67,6 +67,7 @@ def a_star(board,rows,columns, my_char, opp_char):
         while states:
             ss, curr = heapq.heappop(states)
             valid_cols = valid_cols(curr.board, rows)
+            #use apply_move to make a move. if the heuristic is higher than the current optimal state, we update it.
 
 def window_evaluation(window, my_char, opp_char):
     score = 0
