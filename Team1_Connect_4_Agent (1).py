@@ -59,6 +59,14 @@ def a_star(board,rows,columns, my_char, opp_char):
                     board[r][col] = symbol
                     return board
             return None
+        start = Connect4State(board, [], 0)
+        states = []
+        heapq.heappush(states, (start.cost + start.heuristic, start))
+        optimal_state = state
+
+        while states:
+            ss, curr = heapq.heappop(states)
+            valid_cols = valid_cols(curr.board, rows)
 
 def window_evaluation(window, my_char, opp_char):
     score = 0
