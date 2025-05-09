@@ -50,7 +50,7 @@ def a_star(board,rows,columns, my_char, opp_char):
             self.cost= cost 
             self.heuristic = heuristic(board, my_char, opp_char)    
 
-        def valid_cells(board, row):
+        def valid_cols(board, row):
             return [col for col in range(len(board[0])) if board[0][col] == ' ']
         
         def apply_move(board, row, col, symbol):
