@@ -67,6 +67,15 @@ def a_star(board,rows,columns, my_char, opp_char):
         while states:
             ss, curr = heapq.heappop(states)
             valid_cols = valid_cols(curr.board, rows)
+            for col in valid_cols:
+                board1 = apply_move(curr.board, rows, col, my_char)
+                move1 = curr.moves + [col]
+                cost1 = curr.cost + 1
+                state1 = Connect4State(board1, move1, cost1)
+                heapq.heappush(states, (state1.cost + state1.heuristic, state1))
+                if state1.heuristic < start.heuristic:
+                    optimal_state = state1
+    return optimal_state.moves[0] + 1
             #use apply_move to make a move. if the heuristic is higher than the current optimal state, we update it.
 
 def window_evaluation(window, my_char, opp_char):
