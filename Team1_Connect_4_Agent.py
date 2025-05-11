@@ -33,6 +33,7 @@ def a_star(board, rows, columns, my_char, opp_char):
         Description: Add later
         Atharva Berde: 100% Designed and implemented first version of
         the function.
+        Source Code: https://www.geeksforgeeks.org/a-search-algorithm/
     """
     class Connect4State:
         def __init__(self, board, moves, cost):
