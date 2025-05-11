@@ -39,7 +39,7 @@ def a_star(board, rows, columns, my_char, opp_char):
         def __init__(self, board, moves, cost):
             self.board = board
             self.moves = moves
-            self.cost = cost
+            self.cost = cost             
             self.heuristic = heuristic(board, my_char, opp_char)
     
 
