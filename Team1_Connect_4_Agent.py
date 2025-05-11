@@ -48,7 +48,7 @@ def a_star(board, rows, columns, my_char, opp_char):
         return [col for col in range(columns) if board[0][col] == ' ']                
 
     def apply_move(board, col, symbol):
-        """ """
+        """When making a move, user chooses a col. Then we will start from the bottom and check if the cell is empty. If not, we keep on moving up until there is an empty cell. If there is no empty cell, then we return None since a move can't be made in that specific column. """
         new_board = copy.deepcopy(board)
         for r in reversed(range(rows)):
             if new_board[r][col] == ' ':
