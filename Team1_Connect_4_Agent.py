@@ -63,21 +63,21 @@ def a_star(board, rows, columns, my_char, opp_char):
     max_depth = 3  
 
     while states:
-        f_n, curr = heapq.heappop(states)   #we get the f(n) value and state(curr)
-        if len(curr.moves) >= max_depth:
+        f_n, current_state = heapq.heappop(states)   #we get the f(n) value and current state(lowest state)
+        if len(current_state.moves) >= max_depth:
             continue
-        for col in valid_cols(curr.board):
-            board1 = apply_move(curr.board, col, my_char)
+        for col in valid_cols(current_state.board):    #explore all valid columns where move can be made
+            board1 = apply_move(current_state.board, col, my_char)
             if board1 is None:
                 continue
-            move1 = curr.moves + [col]
-            cost1 = curr.cost + 1
-            state1 = Connect4State(board1, move1, cost1)
-            heapq.heappush(states, (state1.cost + state1.heuristic, state1))
-            if state1.heuristic > optimal_state.heuristic:
-                optimal_state = state1
+            move1 = current_state.moves + [col]
+            cost1 = current_state.cost + 1
+            state1 = Connect4State(board1, move1, cost1)  #new state with updated board after move
+            heapq.heappush(states, (state1.cost + state1.heuristic, state1))  #push new state and its f(n) value to queue
+            if state1.heuristic > optimal_state.heuristic:   #update opitimal state
+                optimal_state = state1 
 
-    if optimal_state.moves:
+    if optimal_state.moves:         
         return optimal_state.moves[0] + 1
     else:
         valid_columns = [col+1 for col in range(columns) if board[0][col] == ' ']
