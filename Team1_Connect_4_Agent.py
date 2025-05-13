@@ -39,11 +39,11 @@ def a_star(board, rows, columns, my_char, opp_char):
         def __init__(self, board, moves, cost):
             self.board = board  
             self.moves = moves   #move of user
-            self.cost = cost   #g(n)          
-            self.heuristic = heuristic(board, my_char, opp_char) #h(n)
-            #f(n) = self.cost + self.heuristic
+            self.g = cost   #g(n), cost from start state to current state           
+            self.h = heuristic(board, my_char, opp_char) #h(n), heuristic
+            self.f = self.cost + self.heuristic
         def __lt__(self, other):
-            return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+            return (self.f) < (other.f)
    
     def valid_cols(board):
         """ We check the columns in which a move can be made. If the topmost cell of a column is empty, then a valid move can be made in that particular column. """
@@ -75,7 +75,7 @@ def a_star(board, rows, columns, my_char, opp_char):
             move1 = curr.moves + [col]
             cost1 = curr.cost + 1
             state1 = Connect4State(board1, move1, cost1)  #new state with updated board after move
-            heapq.heappush(states, (state1.cost + state1.heuristic, state1))  #push new state and its f(n) value to queue
+            heapq.heappush(states, (state1.f, state1))  #push new state and its f(n) value to queue
             if state1.heuristic > optimal_state.heuristic:   #update opitimal state
                 optimal_state = state1 
 
