@@ -38,10 +38,12 @@ def a_star(board, rows, columns, my_char, opp_char):
     class Connect4State:
         def __init__(self, board, moves, cost):
             self.board = board  
-            self.moves = moves   #move of user
-            self.cost = cost   #g(n)          
-            self.heuristic = heuristic(board, my_char, opp_char) #h(n)
-            #f(n) = self.cost + self.heuristic
+            self.moves = moves
+            self.cost = cost
+            self.heuristic = heuristic(board, my_char, opp_char)
+    
+        def __lt__(self, other):
+            return (self.cost + self.heuristic) < (other.cost + other.heuristic)
    
     def valid_cols(board):
         """ We check the columns in which a move can be made. If the topmost cell of a column is empty, then a valid move can be made in that particular column. """
