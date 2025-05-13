@@ -41,7 +41,7 @@ def a_star(board, rows, columns, my_char, opp_char):
             self.moves = moves   #move of user
             self.g = cost   #g(n), cost from start state to current state           
             self.h = heuristic(board, my_char, opp_char) #h(n), heuristic
-            self.f = self.cost + self.heuristic
+            self.f = self.g + self.h
         def __lt__(self, other):
             return (self.f) < (other.f)
    
