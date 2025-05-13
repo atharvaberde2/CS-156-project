@@ -83,10 +83,11 @@ def a_star(board, rows, columns, my_char, opp_char):
         valid_columns = [col+1 for col in range(columns) if board[0][col] == ' ']
         return random.choice(valid_columns)
     
-def forward_chaining_reasoning(board, game_rows, game_cols, my_char, opp_char, check_win):
+def forward_chaining_reasoning(board, game_rows, game_cols, my_game_symbol, opp_char, check_win):
     """
     Forward chaining reasoning
     """
+    center_col = game_cols // 2
 
     # Rule 1: Win if possible
     for col in range(game_cols):
@@ -95,9 +96,9 @@ def forward_chaining_reasoning(board, game_rows, game_cols, my_char, opp_char, c
         temp_board = copy.deepcopy(board)
         for r in reversed(range(game_rows)):
             if temp_board[r][col] == ' ':
-                temp_board[r][col] = my_char
+                temp_board[r][col] = my_game_symbol
                 break
-        if check_win(temp_board, my_char):
+        if check_win(temp_board, my_game_symbol):
             return col
 
     # Rule 2: Block opponent win
@@ -110,7 +111,11 @@ def forward_chaining_reasoning(board, game_rows, game_cols, my_char, opp_char, c
                 temp_board[r][col] = opp_char
                 break
         if check_win(temp_board, opp_char):
-            return col
+            return col  
+
+    # Rule 3: Take center column
+    if board[0][center_col] == ' ':
+        return center_col 
 
     return None
 
