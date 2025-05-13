@@ -60,7 +60,7 @@ def a_star(board, rows, columns, my_char, opp_char):
 
     start = Connect4State(board, [], 0) #initial state
     states = [] 
-    heapq.heappush(states, (start.cost + start.heuristic, start)) #store each state into a priority queue. Each state is sorted by f(n) = h(n) + g(n).  
+    heapq.heappush(states, (start.f, start)) #store each state into a priority queue. Each state is sorted by f(n) = h(n) + g(n).  
     optimal_state = start
     max_depth = 3  
 
@@ -73,10 +73,10 @@ def a_star(board, rows, columns, my_char, opp_char):
             if board_new is None:
                 continue
             move_new = curr.moves + [col]
-            cost_new = curr.cost + 1
+            cost_new = curr.g + 1
             state_new = Connect4State(board_new, move_new, cost_new)  #new state with updated board after move
             heapq.heappush(states, (state_new.f, state_new))  #push new state and its f(n) value to queue
-            if state_new.heuristic > optimal_state.heuristic:   #update opitimal state
+            if state_new.h > optimal_state.h:   #update opitimal state
                 optimal_state = state_new
 
     if optimal_state.moves:         
