@@ -33,17 +33,15 @@ def a_star(board, rows, columns, my_char, opp_char):
         Description: Add later
         Atharva Berde: 100% Designed and implemented first version of
         the function.
-        Reference: https://www.geeksforgeeks.org/a-search-algorithm/, https://www.geeksforgeeks.org/python-__lt__-magic-method/
+        Source Code: https://www.geeksforgeeks.org/a-search-algorithm/
     """
     class Connect4State:
         def __init__(self, board, moves, cost):
             self.board = board  
             self.moves = moves   #move of user
-            self.g = cost   #g(n), cost from start state to current state           
-            self.h = heuristic(board, my_char, opp_char) #h(n), heuristic
-            self.f = self.g + self.h
-        def __lt__(self, other):
-            return (self.f) < (other.f)
+            self.cost = cost   #g(n)          
+            self.heuristic = heuristic(board, my_char, opp_char) #h(n)
+            #f(n) = self.cost + self.heuristic
    
     def valid_cols(board):
         """ We check the columns in which a move can be made. If the topmost cell of a column is empty, then a valid move can be made in that particular column. """
@@ -60,31 +58,61 @@ def a_star(board, rows, columns, my_char, opp_char):
 
     start = Connect4State(board, [], 0) #initial state
     states = [] 
-    heapq.heappush(states, (start.f, start)) #store each state into a priority queue. Each state is sorted by f(n) = h(n) + g(n).  
+    heapq.heappush(states, (start.cost + start.heuristic, start)) #store each state into a priority queue. Each state is sorted by f(n) = h(n) + g(n).  
     optimal_state = start
     max_depth = 3  
 
-    while len(states) > 0:
+    while states:
         f_n, curr = heapq.heappop(states)   #we get the f(n) value and current state(lowest state)
         if len(curr.moves) >= max_depth:
             continue
         for col in valid_cols(curr.board):    #explore all valid columns where move can be made
-            board_new = apply_move(curr.board, col, my_char)
-            if board_new is None:
+            board1 = apply_move(curr.board, col, my_char)
+            if board1 is None:
                 continue
-            move_new = curr.moves + [col]
-            cost_new = curr.g + 1
-            state_new = Connect4State(board_new, move_new, cost_new)  #new state with updated board after move
-            heapq.heappush(states, (state_new.f, state_new))  #push new state and its f(n) value to queue
-            if state_new.h > optimal_state.h:   #update opitimal state
-                optimal_state = state_new
+            move1 = curr.moves + [col]
+            cost1 = curr.cost + 1
+            state1 = Connect4State(board1, move1, cost1)  #new state with updated board after move
+            heapq.heappush(states, (state1.cost + state1.heuristic, state1))  #push new state and its f(n) value to queue
+            if state1.heuristic > optimal_state.heuristic:   #update opitimal state
+                optimal_state = state1 
 
     if optimal_state.moves:         
         return optimal_state.moves[0] + 1
     else:
         valid_columns = [col+1 for col in range(columns) if board[0][col] == ' ']
         return random.choice(valid_columns)
+    
+def forward_chaining_reasoning(board, game_rows, game_cols, my_char, opp_char, check_win):
+    """
+    Forward chaining reasoning
+    """
 
+    # Rule 1: Win if possible
+    for col in range(game_cols):
+        if board[0][col] != ' ':
+            continue
+        temp_board = copy.deepcopy(board)
+        for r in reversed(range(game_rows)):
+            if temp_board[r][col] == ' ':
+                temp_board[r][col] = my_char
+                break
+        if check_win(temp_board, my_char):
+            return col
+
+    # Rule 2: Block opponent win
+    for col in range(game_cols):
+        if board[0][col] != ' ':
+            continue
+        temp_board = copy.deepcopy(board)
+        for r in reversed(range(game_rows)):
+            if temp_board[r][col] == ' ':
+                temp_board[r][col] = opp_char
+                break
+        if check_win(temp_board, opp_char):
+            return col
+
+    return None
 
 """
 Representation Scheme here
@@ -97,7 +125,7 @@ def what_is_your_move(board, game_rows, game_cols, my_game_symbol):
     """
     import copy
     opp_char = 'O' if my_game_symbol == 'X' else 'X'
-
+    
     # Inline win check
     def check_win(bd, symbol):
         rows, cols = len(bd), len(bd[0])
@@ -123,31 +151,12 @@ def what_is_your_move(board, game_rows, game_cols, my_game_symbol):
                     return True
         return False
 
-    # 1. Rule: Win if possible
-    for col in range(game_cols):
-        if board[0][col] != ' ':
-            continue
-        temp_board = copy.deepcopy(board)
-        for r in reversed(range(game_rows)):
-            if temp_board[r][col] == ' ':
-                temp_board[r][col] = my_game_symbol
-                break
-        if check_win(temp_board, my_game_symbol):
-            return col + 1
-
-    # 2. Rule: Block opponent's win
-    for col in range(game_cols):
-        if board[0][col] != ' ':
-            continue
-        temp_board = copy.deepcopy(board)
-        for r in reversed(range(game_rows)):
-            if temp_board[r][col] == ' ':
-                temp_board[r][col] = opp_char
-                break
-        if check_win(temp_board, opp_char):
-            return col + 1
-
-    # 3. Otherwise, use A*
+    # 1. Use forward chaining
+    move = forward_chaining_reasoning(board, game_rows, game_cols, my_game_symbol, opp_char, check_win)
+    if move is not None:
+        return move + 1
+    
+    # 2. Otherwise, use A*
     return a_star(board, game_rows, game_cols, my_game_symbol, opp_char)
 
 def window_evaluation(window, my_char, opp_char):
