@@ -39,11 +39,11 @@ def a_star(board, rows, columns, my_char, opp_char):
         def __init__(self, board, moves, cost):
             self.board = board  
             self.moves = moves
-            self.cost = cost
-            self.heuristic = heuristic(board, my_char, opp_char)
+            self.cost = cost #g(n)
+            self.heuristic = heuristic(board, my_char, opp_char) #h(n)
     
         def __lt__(self, other):
-            return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+            return (self.cost + self.heuristic) < (other.cost + other.heuristic)  # we compare f(n) of both  states
    
     def valid_cols(board):
         """ We check the columns in which a move can be made. If the topmost cell of a column is empty, then a valid move can be made in that particular column. """
