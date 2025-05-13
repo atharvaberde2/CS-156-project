@@ -64,7 +64,7 @@ def a_star(board, rows, columns, my_char, opp_char):
     optimal_state = start
     max_depth = 3  
 
-    while states:
+    while len(states) > 0:
         f_n, curr = heapq.heappop(states)   #we get the f(n) value and current state(lowest state)
         if len(curr.moves) >= max_depth:
             continue
