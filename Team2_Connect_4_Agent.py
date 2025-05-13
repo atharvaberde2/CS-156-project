@@ -32,7 +32,7 @@ def a_star(board, rows, columns, my_char, opp_char):
             self.moves = moves
             self.cost = cost
             self.heuristic = heuristic(board, my_char, opp_char)
-        def __compare__(self, other):
+        def __lt__(self, other):
             return (self.cost + self.heuristic) < (other.cost + other.heuristic)
      
 
