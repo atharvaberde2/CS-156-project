@@ -2,7 +2,6 @@
 
 # IMPORTS
 import random
-import heapq
 import copy
 # DEFINITIONS
 # board = [[' ' for _ in range(cols)] for _ in range(rows)]
@@ -25,146 +24,212 @@ def init_agent(player_symbol, board_num_rows, board_num_cols, board):
     # No special initialization needed for dummy agent
     return True
 
-"""
-Search Function here
-"""
-def a_star(board, rows, columns, my_char, opp_char):
+def check_win(bd, symbol):
+    """Check if the given symbol has a winning position on the board"""
+    rows, cols = len(bd), len(bd[0])
+          
+    # Horizontal
+    for r in range(rows):
+        for c in range(cols - 3):
+            if all(bd[r][c + i] == symbol for i in range(4)):
+                return True
+                
+    # Vertical
+    for c in range(cols):
+        for r in range(rows - 3):
+            if all(bd[r + i][c] == symbol for i in range(4)):
+                return True
+                
+    # Positive diagonal (top-left to bottom-right)
+    for r in range(rows - 3):
+        for c in range(cols - 3):
+            diagonal = [bd[r + i][c + i] for i in range(4)]
+            if all(bd[r + i][c + i] == symbol for i in range(4)):
+                return True
+                
+    # Negative diagonal (bottom-left to top-right)
+    for r in range(3, rows):
+        for c in range(cols - 3):
+            diagonal = [bd[r - i][c + i] for i in range(4)]
+            if all(bd[r - i][c + i] == symbol for i in range(4)):
+                return True
+                
+    return False
+
+def evaluate_position(bd, my_symbol, opp_symbol, depth):
+    """Evaluate board position for minimax"""
+    # Check if this is a winning position for either player
+    if check_win(bd, my_symbol):
+        return 1000 - depth  # Prefer winning sooner
+    if check_win(bd, opp_symbol):
+        return -1000 + depth  # Prefer losing later
+        
+    # Otherwise, use the heuristic to evaluate the position
+    return heuristic(bd, my_symbol, opp_symbol)
+
+def minimax_alpha_beta(bd, depth, is_maximizing, alpha, beta, my_symbol, opp_symbol, max_depth=4):
     """
-        Description: Add later
-        Atharva Berde: 100% Designed and implemented first version of
-        the function.
-        References: https://www.geeksforgeeks.org/a-search-algorithm/ , https://www.geeksforgeeks.org/python-__lt__-magic-method/
-    """
-    class Connect4State:
-        def __init__(self, board, moves, cost):
-            self.board = board  
-            self.moves = moves
-            self.cost = cost #g(n)
-            self.heuristic = heuristic(board, my_char, opp_char) #h(n)
+    Minimax algorithm with alpha-beta pruning for Connect 4
     
-        def __lt__(self, other):
-            return (self.cost + self.heuristic) < (other.cost + other.heuristic)  # we compare f(n) of both  states
-   
-    def valid_cols(board):
-        """ We check the columns in which a move can be made. If the topmost cell of a column is empty, then a valid move can be made in that particular column. """
-        return [col for col in range(columns) if board[0][col] == ' ']                
-
-    def apply_move(board, col, symbol):
-        """When making a move, user chooses a col. Then we will start from the bottom and check if the cell is empty. If not, we keep on moving up until there is an empty cell. If there is no empty cell, then we return None since a move can't be made in that specific column. """
-        new_board = copy.deepcopy(board)
-        for r in reversed(range(rows)):
-            if new_board[r][col] == ' ':
-                new_board[r][col] = symbol
-                return new_board
-        return None
-
-    start = Connect4State(board, [], 0) #initial state
-    states = [] 
-    heapq.heappush(states, (start.cost + start.heuristic, start)) #store each state into a priority queue. Each state is sorted by f(n) = h(n) + g(n).  
-    optimal_state = start
-    max_depth = 3  
-
-    while states:
-        f_n, curr = heapq.heappop(states)   #we get the f(n) value and current state(lowest state)
-        if len(curr.moves) >= max_depth:
-            continue
-        for col in valid_cols(curr.board):    #explore all valid columns where move can be made
-            board1 = apply_move(curr.board, col, my_char)
-            if board1 is None:
+    Parameters:
+    - bd: Current board state
+    - depth: Current depth in the search tree
+    - is_maximizing: True if maximizing player's turn, False if minimizing
+    - alpha: Alpha value for pruning
+    - beta: Beta value for pruning
+    - my_symbol: The symbol of our player ('X' or 'O')
+    - opp_symbol: The symbol of the opponent
+    - max_depth: Maximum depth to search
+    
+    Returns:
+    - Score of the best move found
+    """
+    # Base cases: max depth reached or terminal state
+    if depth == max_depth:
+        return evaluate_position(bd, my_symbol, opp_symbol, depth)
+        
+    if check_win(bd, my_symbol):
+        return 1000 - depth
+        
+    if check_win(bd, opp_symbol):
+        return -1000 + depth
+        
+    # Check for draw
+    if all(bd[0][c] != ' ' for c in range(len(bd[0]))):
+        return 0
+        
+    # Maximizing player (our turn)
+    if is_maximizing:
+        max_eval = float('-inf')
+        for col in range(len(bd[0])):
+            if bd[0][col] != ' ':  # Skip full columns
                 continue
-            move1 = curr.moves + [col]
-            cost1 = curr.cost + 1
-            state1 = Connect4State(board1, move1, cost1)  #new state with updated board after move
-            heapq.heappush(states, (state1.cost + state1.heuristic, state1))  #push new state and its f(n) value to queue
-            if state1.heuristic > optimal_state.heuristic:   #update opitimal state
-                optimal_state = state1 
-
-    if optimal_state.moves:         
-        return optimal_state.moves[0] + 1
-    else:
-        valid_columns = [col+1 for col in range(columns) if board[0][col] == ' ']
-        return random.choice(valid_columns)
+                
+            # Make move
+            temp_board = copy.deepcopy(bd)
+            for r in reversed(range(len(bd))):
+                if temp_board[r][col] == ' ':
+                    temp_board[r][col] = my_symbol
+                    break
+                    
+            # Evaluate
+            eval = minimax_alpha_beta(temp_board, depth + 1, False, alpha, beta, my_symbol, opp_symbol, max_depth)
+            max_eval = max(max_eval, eval)
+            
+            # Alpha-beta pruning
+            alpha = max(alpha, eval)
+            if beta <= alpha:
+                break
+                
+        return max_eval
     
-def forward_chaining_reasoning(board, game_rows, game_cols, my_game_symbol, opp_char, check_win):
-    """
-    Forward chaining reasoning
-    """
-    center_col = game_cols // 2
+    # Minimizing player (opponent's turn)
+    else:
+        min_eval = float('inf')
+        for col in range(len(bd[0])):
+            if bd[0][col] != ' ':  # Skip full columns
+                continue
+                
+            # Make move
+            temp_board = copy.deepcopy(bd)
+            for r in reversed(range(len(bd))):
+                if temp_board[r][col] == ' ':
+                    temp_board[r][col] = opp_symbol
+                    break
+                    
+            # Evaluate
+            eval = minimax_alpha_beta(temp_board, depth + 1, True, alpha, beta, my_symbol, opp_symbol, max_depth)
+            min_eval = min(min_eval, eval)
+            
+            # Alpha-beta pruning
+            beta = min(beta, eval)
+            if beta <= alpha:
+                break
+                
+        return min_eval
 
-    # Rule 1: Win if possible
+def what_is_your_move(board, game_rows, game_cols, my_game_symbol):
+    """
+    Enhanced move selection strategy with minimax principles for better performance as second player
+    """
+    import copy
+    opp_char = 'O' if my_game_symbol == 'X' else 'X'
+    
+    # IMPORTANT: First prioritize blocking opponent wins
+    # Check if opponent can win in one move
     for col in range(game_cols):
-        if board[0][col] != ' ':
+        if board[0][col] != ' ':  # Skip full columns
             continue
+        temp_board = copy.deepcopy(board)
+        # Find where the piece would land
+        for r in reversed(range(game_rows)):
+            if temp_board[r][col] == ' ':
+                temp_board[r][col] = opp_char
+                break
+        # Check if opponent would win here
+        if check_win(temp_board, opp_char):
+            return col + 1  # 1-indexed for game
+
+    # Then check if we can win in one move
+    for col in range(game_cols):
+        if board[0][col] != ' ':  # Skip full columns
+            continue
+        temp_board = copy.deepcopy(board)
+        # Find where the piece would land
+        for r in reversed(range(game_rows)):
+            if temp_board[r][col] == ' ':
+                temp_board[r][col] = my_game_symbol
+                break
+        # Check if this is a winning move
+        if check_win(temp_board, my_game_symbol):
+            return col + 1  # 1-indexed for game
+
+    # Use minimax to find the best move
+    best_score = float('-inf')
+    best_move = -1
+    
+    # Count pieces to adjust search depth
+    piece_count = sum(row.count(my_game_symbol) + row.count(opp_char) for row in board)
+    max_search_depth = 4  # Default depth
+    
+    # Adjust depth based on game stage
+    if piece_count < 10:
+        max_search_depth = 5  # Deeper search early game
+    elif piece_count > 20:
+        max_search_depth = 3  # Shallower search late game
+    
+    for col in range(game_cols):
+        if board[0][col] != ' ':  # Skip full columns
+            continue
+            
+        # Make move
         temp_board = copy.deepcopy(board)
         for r in reversed(range(game_rows)):
             if temp_board[r][col] == ' ':
                 temp_board[r][col] = my_game_symbol
                 break
-        if check_win(temp_board, my_game_symbol):
-            return col
-
-    # Rule 2: Block opponent win
-    for col in range(game_cols):
-        if board[0][col] != ' ':
-            continue
-        temp_board = copy.deepcopy(board)
-        for r in reversed(range(game_rows)):
-            if temp_board[r][col] == ' ':
-                temp_board[r][col] = opp_char
-                break
-        if check_win(temp_board, opp_char):
-            return col  
-
-    # Rule 3: Take center column
+                
+        # Evaluate with minimax
+        score = minimax_alpha_beta(temp_board, 0, False, float('-inf'), float('inf'), 
+                                   my_game_symbol, opp_char, max_search_depth)
+        
+        # Update best move
+        if score > best_score or (score == best_score and col == game_cols // 2):
+            best_score = score
+            best_move = col
+            
+    # If found a good move with minimax
+    if best_move != -1:
+        return best_move + 1
+    
+    # Fallback to center control
+    center_col = game_cols // 2
     if board[0][center_col] == ' ':
-        return center_col 
-
-    return None
-
-"""
-Representation Scheme here
-"""
-def what_is_your_move(board, game_rows, game_cols, my_game_symbol):
-    """
-        Description: Rule Based Representation. Add later
-        Rajiv Mohan: 100% Designed and implemented first version of
-        the function.
-    """
-    import copy
-    opp_char = 'O' if my_game_symbol == 'X' else 'X'
+        return center_col + 1
     
-    # Inline win check
-    def check_win(bd, symbol):
-        rows, cols = len(bd), len(bd[0])
-        # Horizontal
-        for r in range(rows):
-            for c in range(cols - 3):
-                if all(bd[r][c + i] == symbol for i in range(4)):
-                    return True
-        # Vertical
-        for c in range(cols):
-            for r in range(rows - 3):
-                if all(bd[r + i][c] == symbol for i in range(4)):
-                    return True
-        # Positive diagonal
-        for r in range(rows - 3):
-            for c in range(cols - 3):
-                if all(bd[r + i][c + i] == symbol for i in range(4)):
-                    return True
-        # Negative diagonal
-        for r in range(3, rows):
-            for c in range(cols - 3):
-                if all(bd[r - i][c + i] == symbol for i in range(4)):
-                    return True
-        return False
-
-    # 1. Use forward chaining
-    move = forward_chaining_reasoning(board, game_rows, game_cols, my_game_symbol, opp_char, check_win)
-    if move is not None:
-        return move + 1
-    
-    # 2. Otherwise, use A*
-    return a_star(board, game_rows, game_cols, my_game_symbol, opp_char)
+    # Last resort: random valid move
+    valid_columns = [col+1 for col in range(game_cols) if board[0][col] == ' ']
+    return random.choice(valid_columns)
 
 def window_evaluation(window, my_char, opp_char):
     score = 0

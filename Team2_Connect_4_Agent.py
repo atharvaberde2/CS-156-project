@@ -153,7 +153,7 @@ def connect_4_result(board, winner, looser):
     print("The looser is " + looser)
     print()
 
-    print("The final board is")   # Uncomment if you want to print the game board.
+    #print("The final board is")   # Uncomment if you want to print the game board.
     # print(board)  # Uncomment if you want to print the game board.
 
     # Insert your code HERE to do whatever you like with the arguments.
