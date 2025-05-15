@@ -75,7 +75,7 @@ def a_star(board, rows, columns, my_char, opp_char):
         if len(curr.moves) >= max_depth:
             continue
         #explore all valid columns where move can be made
-        for column in valid_columns(curr.board):    
+        for column in valid_cols(curr.board):
             board1 = apply_move(curr.board, column, my_char)
             if board1 is None:
                 continue
